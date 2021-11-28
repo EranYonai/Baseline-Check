@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, uic, QtGui, QtCore, Qt
 import config, sys
 import openpyxl
-
+from difflib import SequenceMatcher
 
 class MainWindow(QtWidgets.QMainWindow):
     """
@@ -14,22 +14,21 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         super(MainWindow, self).__init__()
         uic.loadUi(config.FILE_PATHS['MAIN_UI'], self)
-        self.check_button.clicked.connect(self.find_word_in_db)
+        self.check_button.clicked.connect(self.inspect_text)
 
-    def find_word_in_db(self):
-        word = self.textEdit.toPlainText()
+    def inspect_text(self):
         try:
-            wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
-            sheet_system = wb[config.EXCEL_SHEET['system']]  # loads specific sheet, always system until smarter
-            for row in sheet_system.iter_rows():  # iterates all rows (row = tuple)
-                for cell in row:  # iterates cells in row
-                    if cell.value is not None:  # cell.value to get str value.
-                        if word == str(cell.value):  # should actually return int match.
-                            colored_word = color_word(color='green', word=word)
-                            self.textEdit.append(colored_word)
-
+            word = self.textEdit.toPlainText()
+            diff = find_word_in_db(word)
+            if diff == 'match':
+                self.textEdit.setText(color_word('green', word))
+            elif diff == 'partial_match':
+                self.textEdit.setText(color_word('yellow', word))
+            else:
+                self.textEdit.setText(color_word('red', word))
         except Exception as e:
             print(e)
+
 
 
 def color_word(color: str, word: str) -> str:
@@ -50,6 +49,31 @@ def color_word(color: str, word: str) -> str:
     if color == 'yellow':
         return YELLOW_TAG + word + CLOSE_TAG
 
+def find_word_in_db(word):
+    try:
+        wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
+        sheet_system = wb[config.EXCEL_SHEET['system']]  # loads specific sheet, always system until smarter
+        for row in sheet_system.iter_rows():  # iterates all rows (row = tuple)
+            for cell in row:  # iterates cells in row
+                if cell.value is not None:  # cell.value to get str value.
+                    diff = similar(word, str(cell.value))
+                    if  diff == 1:
+                        return 'match'
+                    elif diff > 0.8:
+                        return 'partial_match'
+        return 'no_match'
+    except Exception as e:
+        print(e)
+
+def similar(str1, str2):
+    """
+    Gets two string and returns their correlation in precentage (0-1).
+    Using SequenceMatcher of difflib library.
+    :param str1: String 1
+    :param str2: String 2
+    :return: float value
+    """
+    return SequenceMatcher(None, str1, str2).ratio()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
