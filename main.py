@@ -48,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     #  ---- WS special cases ----
                     elif sheet_name == 'WS':  # Columns in Workstation WS
                         pass
-                        #TODO: ---->> if WS validation does funny things, the 'WS Service Tag' should be first, I need to fix this in AutoBaseline export. <<----
+                        # TODO: ---->> if WS validation does funny things, the 'WS Service Tag' should be first, I need to fix this in AutoBaseline export. <<----
 
                     #  ---- Catheters special cases ----
                     elif sheet_name == 'Catheters':  # Columns in Catheters WS
@@ -57,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif sheet_name == 'Pacers':
                         if column_name.endswith('Serial Number'):
                             column_name = 'Pacer Serial Number'
-                        #TODO: ---->> if WS validation does funny things, the 'Serial Number' should be first, I need to fix this in AutoBaseline export. <<----
+                        # TODO: ---->> if WS validation does funny things, the 'Serial Number' should be first, I need to fix this in AutoBaseline export. <<----
                     #  ---- UltraSound special cases ----
                     elif sheet_name == "UltraSound":
                         if column_name.endswith('Ultrasound System'):
@@ -96,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     if color == 'green':  # Append colored line
                         res += f'{color_str(color, line)}<br>'  # Append colored line - green
                     else:  # Append colored line - if not green, show correction in teal
-                        res += f'{color_str(color, line)} -->> {color_str("teal",answer["match"])}<br>'
+                        res += f'{color_str(color, line)} -->> {color_str("teal", answer["match"])}<br>'
                     print(f'found match in row: {answer["row"]}')
                     row = answer["row"]
                 else:
@@ -120,26 +120,49 @@ def color_str(color: str, word: str) -> str:
 
 
 def find_word_in_db(sheet_name, column, word, row=None):
+    """
+    searches word in sheet name's columns
+
+    :param sheet_name: string of the sheet's name
+    :param column: the specific column in which to search
+    :param word: the string to search
+    :param row: the specific row, if known
+    :return:
+    :rtype: dict {'diff', 'row', 'match'}
+    """
+
     def find_cell_in_db(column, row, word):
+        """
+        finds the word in given excel db, returns dict with information
+
+        :param column: the specific column
+        :param word: the string to search
+        :param row: the specific row, if known
+        :return:
+        :rtype: dict {'diff', 'row', 'match'}
+        """
         diff = 0
         cell_in_excel = str(ws[f'{column}{row}'].value)
         if cell_in_excel is not None:  # Iterate all rows of specified column
-            print(f'looking for *{word}* in {str(row)}, current cell: *{cell_in_excel}*')
             diff = max([diff, similar(word, cell_in_excel)])
-            if diff == 1:  # Stop if perfect match was found
+            print(f'looking for *{word}* in row {str(row)}, current cell: *{cell_in_excel}*, diff is {str(diff)}')
+            if diff == 1:  # Stops if perfect match was found
                 return {'diff': diff, 'row': row, 'match': cell_in_excel}
-
+        # if an exact match wasn't found, return the last cell in column?
         return {'diff': diff, 'row': row, 'match': cell_in_excel}
 
+    # ----#
     try:
         wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
+        # TODO: this whole loading the wb multiple time (for each search) is dumb. -> should create a self.wb
+        #  variable that loads the wb once. but if we do, a button for refresh shall add.
         ws = wb[sheet_name]  # loads specific sheet, always system until smarter
-        if row is None:
+        if row is None:  # e.g. row unknown, searching row
             for row in range(3, ws.max_row):  # iterates all rows (row = tuple)
-                answer = find_cell_in_db(column=column, row=row, word=word)
-                if answer['diff'] == 1:
+                ans = find_cell_in_db(column=column, row=row, word=word)
+                if ans['diff'] == 1:
                     print(f"----found exact match for item in row {row}!!----")
-                    return answer
+                    return ans
         else:  # e.g. row is known
             return find_cell_in_db(column=column, row=row, word=word)
 
