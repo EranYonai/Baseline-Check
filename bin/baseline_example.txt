@@ -1,0 +1,144 @@
+STD Name STD Baseline After V&V Project, Phase and Cycle
+Performed by: Full Name
+
+System #1: 
+System Number:		1
+PIU Configuration:	1
+Location Pad:		1
+Patch Unit:		1
+Monitor 1:		1
+Monitor 2:		1
+ECG Phantom:		1
+Aquarium Number:	1
+Aquarium Maximo:	1
+-------------------
+Ultrasound #1: 
+Ultrasound System:	GE Vivid i/q
+Software Version:	12
+Serial Number:		1
+Application Version:	1
+Video Cable:		1
+Ethernet Cable:		1
+-------------------
+Workstation #1:
+SW Version:		1 
+DSP Version:		1
+Image Version:		1
+WS Service Tag:		1
+WS Configuration:	1
+WS Type:		1
+Solios:			Yes
+Performance Tool:	No
+Graphics Card:		1
+Licenses:		VISITAG™, Advanced Mapping, HD Coloring
+Service Packs:		None
+-------------------
+Stockert GmbH System RF Generator #1:
+Software Version:	1
+Serial Number:		1
+EP I/O to Carto Cable:	1
+Ablation adaptor Cable:	1
+EP I/O Box SN:		1
+EP to PIU cable:	1
+EP Shuttle to PIU:	1
+Global Port:		1
+Generator to WS cable:	1
+Patch elect Cable:	1
+Foot Pedal:		1
+-------------------
+SMARTABLATE RF Generator #1:
+System Software:	1
+Serial Number:		1
+Generator to PIU cable:	1
+Generator to WS cable:	1
+Foot Pedal:		1
+-------------------
+nGEN RF Generator #1:
+nGEN Console S.N:		1
+nGEN Console P.N:		1
+nGEN Console Version:		1
+nGEN PSU S.N:			1
+nGEN PSU P.N:			1
+nGEN PSU Cable:			1
+RF Generator to PIU Cable:	1
+nGEN Monitor #1 S.N:		1
+nGEN Monitor #1 P.N:		1
+nGEN Monitor  #1 Version:	1
+nGEN Monitor Hub #1 S.N:	1
+nGEN Monitor Hub #1 P.N:	1
+nGEN Monitor PSU #1 S.N:	1
+nGEN Monitor PSU #1 P.N:	1
+nGEN Monitor #2 S.N:		1
+nGEN Monitor #2 P.N:		1
+nGEN Monitor #2 Version:	1
+nGEN Monitor Hub #2 S.N:	1
+nGEN Monitor Hub #2 P.N:	1
+nGEN Monitor PSU #2 S.N:	1
+nGEN Monitor PSU #2 P.N:	1
+nGEN Pump S.N:			1
+nGEN Pump P.N:			1
+nGEN Pump Version:		1
+nGEN Pump to Console cable:	1
+Foot Pedal:			1
+-------------------
+nMARQ Multi Channel RF Generator #1:
+SW Version:			1
+Serial Number:			1
+nMARQ to CARTO Cable:		1
+Ethernet cable:			1
+nMARQ to COOLFLOW Pump Cable:	1
+Generator to Monitor:		1
+COOLFLOW pump S.N:		1
+COOLFLOW pump Model:		1
+Foot Pedal:			1
+-------------------
+Demo Laptop #1:
+WS Type:		1
+Software Version:	1
+DSP Version:		1
+Image Version:		1
+Service Tag:		1
+All licenses are activated by default but:
+Visitag Surpoint:	Yes
+-------------------
+Pacer:
+Pacer Type:		1
+Serial Number:		1
+-------------------
+Printer:
+Printer Model:		1
+Serial Number:		1
+-------------------
+EPU Device:
+Unit Serial Number:	1
+Unit Version:		1
+-------------------
+qDOT Dongle:
+Serial Number:		1
+Software Version:	1
+Hardware Version:	1
+-------------------
+SPU:
+S/N: 			1
+P/N:			1
+SW Version:		1
+Main FW Version:	1
+Secondary FW Ver:	1
+   Board	| P/N	 |Revision
+Front Location	|EA-5070-32F|P02
+Led Board	|EA-5070-24NP1|P01
+Mother Board	|EA-5070-14NP1|P05
+Back Board	|EA-5070-15F|P03
+Power Board	|EA-5070-16NP1|P02
+Upper Board	|EA-5070-21NP1|P02
+Pacing Board	|EA-5070-23NP1|P01
+TPI Board	|EA-5070-19NP1|P03
+Digital Board	|EA-5070-17NP1|P02
+ECG Board	|EA-5070-18NP1|P02
+SPU Prototypes	|EM-5070-00NP1|P08
+MAG Location	|EA-5070-022F|P05
+-------------------
+Catheters: 
+asd: asd
+Extenders: 
+asda: asd

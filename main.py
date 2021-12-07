@@ -37,22 +37,19 @@ class MainWindow(QtWidgets.QMainWindow):
             for line in bl_text.split('\n'):
                 if not line or line.startswith('-----'):  # New Section - reset variables
                     sheet_name = column_name = item_val = None
-                elif sheet_name != None:  # Item Category (sheet) was already found
+                elif sheet_name is not None:  # Item Category (sheet) was already found
                     column_name, item_val = line.split(':')
                     item_val = item_val.strip()
                     if sheet_name == 'System':  # Columns in System WS
                         if column_name.startswith('Aquarium'):
-                            column_name = 'Aquarium'
+                            column_name = 'Aquarium Number'
                     elif sheet_name == 'WS':  # Columns in Workstation WS
-                        if column_name.endswith('Service Tag'):
-                            column_name = 'Service Tag'
-                        elif column_name.endswith('Configuration'):
-                            column_name = 'Configuration'
+                        pass
                     elif sheet_name == 'Catheters':  # Columns in Catheters WS
                         column_name = 'Catalog Number'
                     elif sheet_name == 'Pacers':
-                        if column_name.endswith('Model'):
-                            column_name = 'Model'
+                        if column_name.endswith('Serial Number'):
+                            column_name = 'Pacer Serial Number'
                 # Find which sheet to search in
                 elif line.startswith('System #'):
                     sheet_name = 'System'
