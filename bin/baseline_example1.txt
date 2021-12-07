@@ -1,0 +1,63 @@
+System II STD Baseline After V&V V7.5P1 Cycle 1
+Performed by: Lia Budman
+ 
+System #1:
+System Number:                              14098
+PIU Configuration:           4
+Location Pad:                    B006388
+Patch Unit:                         M007905
+Monitor 1:                         U2414M Dell 24"
+Monitor 2:                         U2414M Dell 24"
+ECG Phantom:                   PH7930-2016
+Aquarium Number:          BI2444
+Aquarium Maximo:         BI2444
+-------------------
+Ultrasound #1:
+Ultrasound System:         Siemens Acuson X700
+Software Version:            VB20E-2.0.04(0041)
+Serial Number:                  PP0008
+Video Cable:                      M-4700-203
+Ethernet Cable:                CW-4163-01N
+-------------------
+Workstation #1:
+SW Version:                       7.5.0.176 Clean Install
+DSP Version:                      4.31.1
+Image Version:                  5820.8.10.46
+WS Service Tag:               D6XCP63
+WS Configuration:           CP-4458-07F_CFI 8
+WS Type:                            Dell T5820 Prime
+Solios:                                 Yes
+Performance Tool:          No
+Graphics Card:                  NVIDIA Geforce RTX 2080 Ti
+Licenses:                             CARTOSOUND®, SMARTTOUCH™, Dual-Monitor, CONFIDENSE™ Mapping, CARTOREPLAY™, CARTO PRIME™ ,
+Service Packs:                   None
+-------------------
+Stockert GmbH System RF Generator #1:
+Software Version:            1.036
+Serial Number:                  ST4422
+EP I/O to Carto Cable:     39D-91X
+Ablation adaptor Cable: CA-5400-06
+EP I/O Box SN:                  4-419
+EP to PIU cable: 39D-06X
+EP Shuttle to PIU:            39E-43R
+Global Port:                      
+Generator to WS cable:  39D-06X
+Patch elect Cable:            39D-12X
+Foot Pedal:                        None
+-------------------
+Catheters:
+Soundstar Eco 8 Fr: M-5723-17
+LASSO NAV 20 Pole Variable: D-1343-01-S
+DECANav: D-1285-02-S
+NAVISTAR 4mm: D-1183-08-S
+               Dx Defl 10 Pole: D-1079-231-S
+               NAVISTAR 4mm: D-1183-07-S
+LASSO NAV 10 Pole Fixed: D-1312-03-S
+NAVISTAR TCOOL SMRTTCH Bi-Dir: D-1327-05-S
+Extenders:
+               Sound Star Eco 3m: M-5852-01
+               CARTO 3 Ablation & Dx Cables: D-1344-01-S
+Carto 3 Accessories:        M-5852-03
+CARTO 3 Ablation & Dx Cables: D-1286-15-S
+CARTO 3 Ablation & Dx Cables: D-1286-01-S
+CARTO 3 Ablation & Dx Cables: D-1286-04-S
