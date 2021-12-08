@@ -5,6 +5,7 @@ from PyQt5 import QtWidgets, uic
 
 import config
 import sys
+import traceback  # for debug purpose
 
 # Global variables
 name_to_color = {'red': '#FF0000', 'yellow': '#FFA500', 'green': '#008000', 'teal': '#74C2E1'}
@@ -39,8 +40,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 if not line or line.startswith('-----'):  # New Section - reset variables
                     sheet_name = column_name = item_val = None
                 elif sheet_name is not None:  # Item Category (sheet) was already found
-                    column_name, item_val = line.split(':')
+                    if ':' in line:
+                        column_name, item_val = line.split(':')
+                        # TODO: if line does not contain exactly 1 ':', error.
                     item_val = item_val.strip()
+                    column_name = column_name.strip()
                     #  ---- System special cases ----
                     if sheet_name == 'System':  # Columns in System WS
                         if column_name.startswith('Aquarium'):
@@ -52,7 +56,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
                     #  ---- Catheters special cases ----
                     elif sheet_name == 'Catheters':  # Columns in Catheters WS
-                        column_name = 'Catalog Number'
+                        column_name = 'Catheters Catalog Number'
+                        row = None
                     #  ---- Pacers special cases ----
                     elif sheet_name == 'Pacers':
                         if column_name.endswith('Serial Number'):
@@ -65,7 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     #  ---- Catheters special cases ----
                     elif sheet_name == "Catheters":
                         if column_name.startswith('Catheters'):
-                            column_name = 'Model'
+                            column_name = 'Catheters Catalog Number'
                 # Find which sheet to search in
                 elif line.startswith('System #'):
                     sheet_name = 'System'
@@ -76,35 +81,49 @@ class MainWindow(QtWidgets.QMainWindow):
                 elif line.startswith('Workstation #'):
                     sheet_name = 'WS'
                     column_name = item_val = row = None
-                elif line.startswith('Catheters') or line.startswith('Extenders'):
-                    sheet_name = 'Catheters'
+                elif line.startswith('SPU'):
+                    sheet_name = 'SPU'
+                    # TODO: add ':' in Auto Baseline SPU export and remove first '|'.
                     column_name = item_val = row = None
+                elif line.startswith('Catheters'):
+                    sheet_name = 'Catheters'
+                    column_name = 'Catheters Catalog Number'
+                    item_val = row = None
+                elif line.startswith('Extenders'):
+                    sheet_name = 'Catheters'
+                    column_name = 'Extenders Catalog Number'
+                    item_val = row = None
                 elif line.startswith('Pacer') or line.startswith('Printer') or line.startswith('EPU'):
                     sheet_name = 'Pacers'
                     column_name = item_val = row = None
+                print(f'sheetname {sheet_name}, columnname {column_name}')
 
                 # if Sheet, column and item_value have all been detected- Search for similarities in the specified column and sheet
                 if sheet_name and column_name and sheet_name in self.excel_map and column_name in self.excel_map[
-                    sheet_name]:
+                    sheet_name] and item_val is not None:
                     if row is None:
                         answer = find_word_in_db(sheet_name=sheet_name, column=self.excel_map[sheet_name][column_name],
                                                  word=item_val)
                     else:
                         answer = find_word_in_db(sheet_name=sheet_name, column=self.excel_map[sheet_name][column_name],
                                                  word=item_val, row=row)
-                    color = 'green' if answer['diff'] == 1 else 'yellow' if answer['diff'] >= 0.8 else 'red'
-                    if color == 'green':  # Append colored line
-                        res += f'{color_str(color, line)}<br>'  # Append colored line - green
-                    else:  # Append colored line - if not green, show correction in teal
-                        res += f'{color_str(color, line)} -->> {color_str("teal", answer["match"])}<br>'
-                    print(f'found match in row: {answer["row"]}')
-                    row = answer["row"]
+                    if answer is None: # if cell wasn't found
+                        res += f'{color_str("red", line)} --> EXCEL Not found<br>'
+                    else:
+                        color = 'green' if answer['diff'] == 1 else 'yellow' if answer['diff'] >= 0.8 else 'red'
+                        if color == 'green':  # Append colored line
+                            res += f'{color_str(color, line)}<br>'  # Append colored line - green
+                        else:  # Append colored line - if not green, show correction in teal
+                            res += f'{color_str(color, line)} -->> {color_str("teal", answer["match"])}<br>'
+                        print(f'found match in row: {answer["row"]}')
+                        row = answer["row"]
                 else:
                     res += f'{line}<br>'  # append unchecked lines as they are
 
             self.textEdit.setHtml(res)
         except Exception as e:
             print("Problem in scanning baselines: " + str(e))
+            traceback.print_exc()
 
 
 def color_str(color: str, word: str) -> str:
@@ -144,11 +163,11 @@ def find_word_in_db(sheet_name, column, word, row=None):
         diff = 0
         cell_in_excel = str(ws[f'{column}{row}'].value)
         if cell_in_excel is not None:  # Iterate all rows of specified column
-            diff = max([diff, similar(word, cell_in_excel)])
+            diff = max([diff, similar(word, cell_in_excel.strip())])
             print(f'looking for *{word}* in row {str(row)}, current cell: *{cell_in_excel}*, diff is {str(diff)}')
             if diff == 1:  # Stops if perfect match was found
                 return {'diff': diff, 'row': row, 'match': cell_in_excel}
-        # if an exact match wasn't found, return the last cell in column?
+        # if an exact match wasn't found, return the last cell in column? it actually returns None sometimes
         return {'diff': diff, 'row': row, 'match': cell_in_excel}
 
     # ----#
@@ -158,7 +177,7 @@ def find_word_in_db(sheet_name, column, word, row=None):
         #  variable that loads the wb once. but if we do, a button for refresh shall add.
         ws = wb[sheet_name]  # loads specific sheet, always system until smarter
         if row is None:  # e.g. row unknown, searching row
-            for row in range(3, ws.max_row):  # iterates all rows (row = tuple)
+            for row in range(3, ws.max_row + 1):  # iterates all rows (row = tuple), added +1 because if the value was last it didn't get to it.
                 ans = find_cell_in_db(column=column, row=row, word=word)
                 if ans['diff'] == 1:
                     print(f"----found exact match for item in row {row}!!----")
@@ -200,6 +219,13 @@ def explore_excel():
 
 
 if __name__ == "__main__":
+    """It's boilerplate code that protects users from accidentally invoking the script when they didn't intend to. 
+    Here are some common problems when the guard is omitted from a script: If you import the guardless script in 
+    another script (e.g. import my_script_without_a_name_eq_main_guard), then the second script will trigger the 
+    first to run at import time and using the second script's command line arguments. This is almost always a 
+    mistake. If you have a custom class in the guardless script and save it to a pickle file, then unpickling it in 
+    another script will trigger an import of the guardless script, with the same problems outlined in the previous 
+    bullet. """
     app = QtWidgets.QApplication(sys.argv)
     win = MainWindow()
     win.show()
