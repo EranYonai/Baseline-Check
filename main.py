@@ -34,7 +34,7 @@ class MainWindow(QtWidgets.QMainWindow):
             row = None
             res = ''
             bl_text = self.textEdit.toPlainText()
-            sheet_name = column_name = item_val = None
+            sheet_name = column_name = item_val = extenders_flag = None
 
             for line in bl_text.split('\n'):
                 if not line or line.startswith('-----'):  # New Section - reset variables
@@ -56,7 +56,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
                     #  ---- Catheters special cases ----
                     elif sheet_name == 'Catheters':  # Columns in Catheters WS
-                        column_name = 'Catheters Catalog Number'
+                        if line.startswith('Extenders'):
+                            extenders_flag = True
+                        if line.startswith('Catheters'):
+                            extenders_flag = None
+                            # ^ This is to cover the case Catheters and Extenders are not divided by --------. ^
+                        if extenders_flag is None:
+                            column_name = 'Catheters Catalog Number'
+                        else:
+                            column_name = 'Extenders Catalog Number'
+                        if item_val == "":  # in the case of "Extender:"
+                            item_val = None
                         row = None
                     #  ---- Pacers special cases ----
                     elif sheet_name == 'Pacers':
@@ -67,10 +77,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif sheet_name == "UltraSound":
                         if column_name.endswith('Ultrasound System'):
                             column_name = 'Model'
-                    #  ---- Catheters special cases ----
-                    elif sheet_name == "Catheters":
-                        if column_name.startswith('Catheters'):
-                            column_name = 'Catheters Catalog Number'
+                #    ----------------------        #
                 # Find which sheet to search in
                 elif line.startswith('System #'):
                     sheet_name = 'System'
@@ -85,14 +92,15 @@ class MainWindow(QtWidgets.QMainWindow):
                     sheet_name = 'SPU'
                     # TODO: add ':' in Auto Baseline SPU export and remove first '|'.
                     column_name = item_val = row = None
-                elif line.startswith('Catheters'):
-                    sheet_name = 'Catheters'
-                    column_name = 'Catheters Catalog Number'
-                    item_val = row = None
                 elif line.startswith('Extenders'):
                     sheet_name = 'Catheters'
                     column_name = 'Extenders Catalog Number'
+                    extenders_flag = True
                     item_val = row = None
+                elif line.startswith('Catheters'):
+                    sheet_name = 'Catheters'
+                    column_name = 'Catheters Catalog Number'
+                    item_val = row = extenders_flag = None
                 elif line.startswith('Pacer') or line.startswith('Printer') or line.startswith('EPU'):
                     sheet_name = 'Pacers'
                     column_name = item_val = row = None
@@ -107,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     else:
                         answer = find_word_in_db(sheet_name=sheet_name, column=self.excel_map[sheet_name][column_name],
                                                  word=item_val, row=row)
-                    if answer is None: # if cell wasn't found
+                    if answer is None:  # if cell wasn't found
                         res += f'{color_str("red", line)} --> EXCEL Not found<br>'
                     else:
                         color = 'green' if answer['diff'] == 1 else 'yellow' if answer['diff'] >= 0.8 else 'red'
