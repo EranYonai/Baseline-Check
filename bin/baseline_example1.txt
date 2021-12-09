@@ -45,6 +45,26 @@ Generator to WS cable:  39D-06X
 Patch elect Cable:            39D-12X
 Foot Pedal:                        None
 -------------------
+SPU:
+S/N: 			S419974
+P/N:			EM-50570-00NP1
+SW Version:		1.1.0.70
+Main FW Version:	4.9.0.7
+Secondary FW Ver:	1.1.2.5
+   Board	| P/N	 |Revision
+Mag Location	|EA-5070-022F|P05
+Front Location	|EA-5070-32F|P02
+Led Board	|EA-5070-24NP1|P01
+Mother Board	|EA-5070-14NP1|P05
+Back Board	|EA-5070-15F|P03
+Power Board	|EA-5070-16NP1|P02
+Upper Board	|EA-5070-21NP1|P02
+Pacing Board	|EA-5070-23NP1|P01
+TPI Board	|EA-5070-23NP1|P03
+Digital Board	|EA-5070-17NP1|P02
+ECG Board	|EA-5070-18NP1|P02
+SPU Prototypes	|EM-5070-00NP1|P08
+--------------------
 Catheters:
 Soundstar Eco 8 Fr: M-5723-17
 LASSO NAV 20 Pole Variable: D-1343-01-S
@@ -61,3 +81,17 @@ Carto 3 Accessories:        M-5852-03
 CARTO 3 Ablation & Dx Cables: D-1286-15-S
 CARTO 3 Ablation & Dx Cables: D-1286-01-S
 CARTO 3 Ablation & Dx Cables: D-1286-04-S
+------------------
+Catheters: 
+ST: D-1327-05-S	
+Pentaray: D-1282-08-S
+Quad: D-1086-726-S	
+Optrell: D-1409-01-SI
+Optrell: D-1409-02-S
+Optrell: D-1409-01-S
+Optrell: D-1409-02-SI
+Extenders: 
+ST Extender : D-1286-03-S
+Eco Cable: EM-5050-060U	
+Quad Extender: CY-1210-C3
+Optrell Extender: D-1344-02-S	

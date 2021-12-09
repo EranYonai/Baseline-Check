@@ -13,7 +13,7 @@ def resource_path(relative_path):
 
 
 # File paths is dumb right now
-FILE_PATHS = {'MAIN_UI': resource_path('dependencies\\MainWindow.ui'),
+FILE_PATHS = {'MAIN_UI': resource_path('dependencies\\Baseline-check.ui'),
               'EQP_EXCEL': resource_path('bin\\Equipment Traceability.xlsx')
               }
 

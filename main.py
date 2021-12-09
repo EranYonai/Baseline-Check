@@ -25,6 +25,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.excel_map = explore_excel()
         uic.loadUi(config.FILE_PATHS['MAIN_UI'], self)  # Loads MainWindow UI using pyqt5 uic.
         self.check_button.clicked.connect(self.scan_baseline)  # Check button click event
+        self.actionRefresh_Database.triggered.connect(self.update_db)
+        # Global self variables:
+        self.wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook would crash if not available
 
     def scan_baseline(self):
         """
@@ -40,9 +43,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 if not line or line.startswith('-----'):  # New Section - reset variables
                     sheet_name = column_name = item_val = None
                 elif sheet_name is not None:  # Item Category (sheet) was already found
+                    #  Manipulation on the line before reading and splitting goes here
                     if ':' in line:
                         column_name, item_val = line.split(':')
                         # TODO: if line does not contain exactly 1 ':', error.
+                    else:  # Temporary fix to SPU fields without ':'
+                        line = line.replace('\t', ':')
+                        column_name, item_val = line.split(':')
+
                     item_val = item_val.strip()
                     column_name = column_name.strip()
                     #  ---- System special cases ----
@@ -53,7 +61,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif sheet_name == 'WS':  # Columns in Workstation WS
                         pass
                         # TODO: ---->> if WS validation does funny things, the 'WS Service Tag' should be first, I need to fix this in AutoBaseline export. <<----
-
                     #  ---- Catheters special cases ----
                     elif sheet_name == 'Catheters':  # Columns in Catheters WS
                         if line.startswith('Extenders'):
@@ -65,8 +72,6 @@ class MainWindow(QtWidgets.QMainWindow):
                             column_name = 'Catheters Catalog Number'
                         else:
                             column_name = 'Extenders Catalog Number'
-                        if item_val == "":  # in the case of "Extender:"
-                            item_val = None
                         row = None
                     #  ---- Pacers special cases ----
                     elif sheet_name == 'Pacers':
@@ -77,7 +82,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif sheet_name == "UltraSound":
                         if column_name.endswith('Ultrasound System'):
                             column_name = 'Model'
-                #    ----------------------        #
+                #    ----------------------------------------------------------------------------------    #
                 # Find which sheet to search in
                 elif line.startswith('System #'):
                     sheet_name = 'System'
@@ -92,7 +97,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     sheet_name = 'SPU'
                     # TODO: add ':' in Auto Baseline SPU export and remove first '|'.
                     column_name = item_val = row = None
-                elif line.startswith('Extenders'):
+                elif line.startswith(
+                        'Extenders'):  # does not get here unless extenders and catheters are divided by '--'
                     sheet_name = 'Catheters'
                     column_name = 'Extenders Catalog Number'
                     extenders_flag = True
@@ -104,7 +110,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 elif line.startswith('Pacer') or line.startswith('Printer') or line.startswith('EPU'):
                     sheet_name = 'Pacers'
                     column_name = item_val = row = None
+
                 print(f'sheetname {sheet_name}, columnname {column_name}')
+                if item_val == "":  # in the case of "Extender:"
+                    item_val = None
 
                 # if Sheet, column and item_value have all been detected- Search for similarities in the specified column and sheet
                 if sheet_name and column_name and sheet_name in self.excel_map and column_name in self.excel_map[
@@ -116,7 +125,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         answer = find_word_in_db(sheet_name=sheet_name, column=self.excel_map[sheet_name][column_name],
                                                  word=item_val, row=row)
                     if answer is None:  # if cell wasn't found
-                        res += f'{color_str("red", line)} --> EXCEL Not found<br>'
+                        res += f'{color_str("red", line)} --> Not found in EXCEL<br>'
                     else:
                         color = 'green' if answer['diff'] == 1 else 'yellow' if answer['diff'] >= 0.8 else 'red'
                         if color == 'green':  # Append colored line
@@ -132,6 +141,14 @@ class MainWindow(QtWidgets.QMainWindow):
         except Exception as e:
             print("Problem in scanning baselines: " + str(e))
             traceback.print_exc()
+
+    def update_db(self):
+        """
+        Dumb functions for now, it is planned to open a child dialog and choose the db location.
+        """
+        print("should update db")
+        self.wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
+        explore_excel()
 
 
 def color_str(color: str, word: str) -> str:
@@ -180,12 +197,10 @@ def find_word_in_db(sheet_name, column, word, row=None):
 
     # ----#
     try:
-        wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
-        # TODO: this whole loading the wb multiple time (for each search) is dumb. -> should create a self.wb
-        #  variable that loads the wb once. but if we do, a button for refresh shall add.
-        ws = wb[sheet_name]  # loads specific sheet, always system until smarter
+        ws = MainWindow.wb[sheet_name]
         if row is None:  # e.g. row unknown, searching row
-            for row in range(3, ws.max_row + 1):  # iterates all rows (row = tuple), added +1 because if the value was last it didn't get to it.
+            for row in range(3,
+                             ws.max_row + 1):  # iterates all rows (row = tuple), added +1 because if the value was last it didn't get to it.
                 ans = find_cell_in_db(column=column, row=row, word=word)
                 if ans['diff'] == 1:
                     print(f"----found exact match for item in row {row}!!----")
@@ -216,8 +231,8 @@ def explore_excel():
     """
     try:
         res = dict()
-        wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
-        for sheet in wb:
+        MainWindow.wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
+        for sheet in MainWindow.wb:
             res[sheet.title] = dict()
             for cell in sheet[2]:  # Iterate cells in 2nd row
                 res[sheet.title][cell.value] = chr(cell.column + Alph_Zero_Val)  # get column letter
