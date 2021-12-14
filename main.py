@@ -22,12 +22,15 @@ class MainWindow(QtWidgets.QMainWindow):
         init - initialize on dialog call.
         """
         super(MainWindow, self).__init__()
-        self.excel_map = explore_excel()
+
         uic.loadUi(config.FILE_PATHS['MAIN_UI'], self)  # Loads MainWindow UI using pyqt5 uic.
         self.check_button.clicked.connect(self.scan_baseline)  # Check button click event
         self.actionRefresh_Database.triggered.connect(self.update_db)
         # Global self variables:
-        self.wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook would crash if not available
+        self.wb = None
+        self.excel_map = None
+        # On initialization function calls:
+        self.update_db()
 
     def scan_baseline(self):
         """
@@ -37,7 +40,8 @@ class MainWindow(QtWidgets.QMainWindow):
             row = None
             res = ''
             bl_text = self.textEdit.toPlainText()
-            sheet_name = column_name = item_val = extenders_flag = None
+            sheet_name = column_name = item_val = None
+            extenders_flag = dongle_flag = rfg_flag = None
 
             for line in bl_text.split('\n'):
                 if not line or line.startswith('-----'):  # New Section - reset variables
@@ -47,16 +51,19 @@ class MainWindow(QtWidgets.QMainWindow):
                     if ':' in line:
                         column_name, item_val = line.split(':')
                         # TODO: if line does not contain exactly 1 ':', error.
-                    else:  # Temporary fix to SPU fields without ':'
+                    elif sheet_name == 'SPU':  # Temporary fix to SPU fields without ':'
                         line = line.replace('\t', ':')
                         column_name, item_val = line.split(':')
+                    else: # in case there is no ':'
+                        item_val = None
+                    if item_val is not None:
+                        item_val = item_val.strip()
+                        column_name = column_name.strip()
 
-                    item_val = item_val.strip()
-                    column_name = column_name.strip()
                     #  ---- System special cases ----
                     if sheet_name == 'System':  # Columns in System WS
                         if column_name.startswith('Aquarium'):
-                            column_name = 'Aquarium Number'
+                            column_name = 'Aquarium'
                     #  ---- WS special cases ----
                     elif sheet_name == 'WS':  # Columns in Workstation WS
                         pass
@@ -68,20 +75,48 @@ class MainWindow(QtWidgets.QMainWindow):
                         if line.startswith('Catheters'):
                             extenders_flag = None
                             # ^ This is to cover the case Catheters and Extenders are not divided by --------. ^
-                        if extenders_flag is None:
+                        if extenders_flag is None and dongle_flag is None:
                             column_name = 'Catheters Catalog Number'
-                        else:
+                            row = None
+                        elif dongle_flag is None:
                             column_name = 'Extenders Catalog Number'
-                        row = None
+                            row = None
+
+                        if line.startswith('Software Version'):
+                            column_name = 'SW Version'
+                        if line.startswith('Hardware Version'):
+                            column_name = 'HW Version'
                     #  ---- Pacers special cases ----
                     elif sheet_name == 'Pacers':
                         if column_name.endswith('Serial Number'):
                             column_name = 'Pacer Serial Number'
-                        # TODO: ---->> if WS validation does funny things, the 'Serial Number' should be first, I need to fix this in AutoBaseline export. <<----
+                        # TODO: ---->> if pacer validation does funny things, the 'Serial Number' should be first, I need to fix this in AutoBaseline export. <<----
                     #  ---- UltraSound special cases ----
                     elif sheet_name == "UltraSound":
                         if column_name.endswith('Ultrasound System'):
                             column_name = 'Model'
+                    # ---- RFGs special cases ----
+                    elif sheet_name == 'RFGs':
+                        if rfg_flag == 'stockert':
+                            if column_name.startswith('Serial Number'):
+                                column_name = 'Stockert SN'
+                                # TODO: Change SN to be first in Auto Baseline export
+                        if rfg_flag == 'smartablate':
+                            if column_name.startswith('Serial Number'):
+                                column_name = 'SMARTABLATE SN'
+                            if column_name.startswith('System Software'):
+                                column_name = "SW Version"
+                        if rfg_flag == 'nmarq':
+                            if column_name.startswith('SW Version'):
+                                column_name = 'nMARQ SW'
+                            if column_name.startswith('Serial Number'):
+                                column_name = 'nMARQ SN'
+                            if column_name.startswith('COOLFLOW pump S.N'):
+                                column_name = 'Pump SN'
+                            if column_name.startswith('COOLFLOW pump Model'):
+                                column_name = 'Pump Model'
+                                # TODO: Change SN to be first in Auto Baseline export
+
                 #    ----------------------------------------------------------------------------------    #
                 # Find which sheet to search in
                 elif line.startswith('System #'):
@@ -106,12 +141,32 @@ class MainWindow(QtWidgets.QMainWindow):
                 elif line.startswith('Catheters'):
                     sheet_name = 'Catheters'
                     column_name = 'Catheters Catalog Number'
-                    item_val = row = extenders_flag = None
+                    item_val = row = extenders_flag = dongle_flag = None
                 elif line.startswith('Pacer') or line.startswith('Printer') or line.startswith('EPU'):
                     sheet_name = 'Pacers'
                     column_name = item_val = row = None
+                elif line.startswith('qDOT Dongle'):
+                    dongle_flag = True
+                    sheet_name = 'Catheters'
+                    column_name = item_val = row = None
+                elif line.startswith('Stockert GmbH System RF Generator'):
+                    sheet_name = 'RFGs'
+                    rfg_flag = 'stockert'
+                    print(rfg_flag)
+                    column_name = item_val = row = None
+                elif line.startswith('SMARTABLATE RF Generator'):
+                    sheet_name = 'RFGs'
+                    rfg_flag = 'smartablate'
+                    column_name = item_val = row = None
+                elif line.startswith('nGEN RF Generator'):
+                    sheet_name = 'nGEN'
+                    column_name = item_val = row = None
+                elif line.startswith('nMARQ Multi Channel RF Generator'):
+                    sheet_name = 'RFGs'
+                    rfg_flag = 'nmarq'
+                    column_name = item_val = row = None
 
-                print(f'sheetname {sheet_name}, columnname {column_name}')
+                print(f'sheetname *{sheet_name}*, columnname *{column_name}*, itemval *{item_val}*')
                 if item_val == "":  # in the case of "Extender:"
                     item_val = None
 
@@ -148,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         print("should update db")
         self.wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
-        explore_excel()
+        self.excel_map = explore_excel()
 
 
 def color_str(color: str, word: str) -> str:

@@ -114,9 +114,9 @@ Unit Serial Number:	1
 Unit Version:		1
 -------------------
 qDOT Dongle:
-Serial Number:		1
-Software Version:	1
-Hardware Version:	1
+Serial Number:		M2114005
+Software Version:	3.12.2
+Hardware Version:	M-5999-02
 -------------------
 SPU:
 S/N: 			1

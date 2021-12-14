@@ -1,0 +1,59 @@
+-------------------
+Stockert GmbH System RF Generator #1:
+Serial Number: 15964988
+Software Version: 1.036
+EP I/O to Carto Cable: 39D-91X
+Ablation adaptor Cable: CA-5400-06
+EP I/O Box SN: 4-419
+EP to PIU cable: 39D-06X
+EP Shuttle to PIU: 39E-43R
+Generator to WS cable: 39D-06X
+Patch elect Cable: 39D-12X
+Foot Pedal: None
+-------------------
+SMARTABLATE RF Generator #1:
+Serial Number:		G4C-1744
+System Software:	1.7
+Generator to PIU cable:	D-1297-04
+Generator to WS cable:	M-4900-23
+Foot Pedal:		None
+-------------------
+nMARQ Multi Channel RF Generator #1:
+Serial Number:			15964988
+SW Version:			3.0.2.2
+nMARQ to CARTO Cable:		M-5810-05
+Ethernet cable:			CW-4163-01N
+nMARQ to COOLFLOW Pump Cable:	123456
+Generator to Monitor:		 M-5812-02
+COOLFLOW pump S.N:		4968
+COOLFLOW pump Model:		5-5491-01
+Foot Pedal:		None	
+-------------------
+nGEN RF Generator #1:
+nGEN Console S.N:		1
+nGEN Console P.N:		1
+nGEN Console Version:		1
+nGEN PSU S.N:			1
+nGEN PSU P.N:			1
+nGEN PSU Cable:			1
+RF Generator to PIU Cable:	1
+nGEN Monitor #1 S.N:		1
+nGEN Monitor #1 P.N:		1
+nGEN Monitor  #1 Version:	1
+nGEN Monitor Hub #1 S.N:	1
+nGEN Monitor Hub #1 P.N:	1
+nGEN Monitor PSU #1 S.N:	1
+nGEN Monitor PSU #1 P.N:	1
+nGEN Monitor #2 S.N:		1
+nGEN Monitor #2 P.N:		1
+nGEN Monitor #2 Version:	1
+nGEN Monitor Hub #2 S.N:	1
+nGEN Monitor Hub #2 P.N:	1
+nGEN Monitor PSU #2 S.N:	1
+nGEN Monitor PSU #2 P.N:	1
+nGEN Pump S.N:			1
+nGEN Pump P.N:			1
+nGEN Pump Version:		1
+nGEN Pump to Console cable:	1
+Foot Pedal:			1
+-------------------
