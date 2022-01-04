@@ -1,10 +1,12 @@
 from difflib import SequenceMatcher
 
 import openpyxl
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtGui, QtCore
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QFileDialog
 
 import config
-import sys
+import sys, os  # OS is here for clearing console only!
 import traceback  # for debug purpose
 
 # Global variables
@@ -26,44 +28,68 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi(config.FILE_PATHS['MAIN_UI'], self)  # Loads MainWindow UI using pyqt5 uic.
         self.check_button.clicked.connect(self.scan_baseline)  # Check button click event
         self.actionRefresh_Database.triggered.connect(self.update_db)
+        self.actionDB_Location.triggered.connect(self.location_dialog)
+        self.redButton.clicked.connect(lambda: self.change_color('red'))
+        self.greenButton.clicked.connect(lambda: self.change_color('green'))
+        self.tealButton.clicked.connect(lambda: self.change_color('teal'))
+        self.yellowButton.clicked.connect(lambda: self.change_color('yellow'))
+        self.actionReturn.triggered.connect(self.revert_text)
         # Global self variables:
-        self.wb = None
-        self.excel_map = None
+        self.wb = self.excel_map = self.preload_text = None
         # On initialization function calls:
         self.update_db()
+
+    def revert_text(self):
+        self.textEdit.clear()
+        self.textEdit.setHtml(self.preload_text)
+        print('---Reverted text---')
 
     def scan_baseline(self):
         """
         Gets a string of a baseline description from GUI and colors the lines according to item's presence DB
         """
         try:
+            clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')  # lambda to clear console
+            clearConsole()
+
             row = None
             res = ''
             bl_text = self.textEdit.toPlainText()
+            self.preload_text = self.textEdit.toHtml()
             sheet_name = column_name = item_val = None
-            extenders_flag = dongle_flag = rfg_flag = None
+            extenders_flag = dongle_flag = rfg_flag = epu_flag = printer_flag = monitor_flag = None  # specific flags
 
             for line in bl_text.split('\n'):
                 if not line or line.startswith('-----'):  # New Section - reset variables
                     sheet_name = column_name = item_val = None
                 elif sheet_name is not None:  # Item Category (sheet) was already found
                     #  Manipulation on the line before reading and splitting goes here
-                    if ':' in line:
+                    if line.count(':') == 1:
                         column_name, item_val = line.split(':')
                         # TODO: if line does not contain exactly 1 ':', error.
                     elif sheet_name == 'SPU':  # Temporary fix to SPU fields without ':'
                         line = line.replace('\t', ':')
                         column_name, item_val = line.split(':')
-                    else: # in case there is no ':'
+                    else:  # in case there is no ':'
                         item_val = None
                     if item_val is not None:
                         item_val = item_val.strip()
                         column_name = column_name.strip()
-
+                    # ----------------------- Special Cases after sheetname is known -------------------- #
                     #  ---- System special cases ----
-                    if sheet_name == 'System':  # Columns in System WS
+                    if sheet_name == 'System' or sheet_name == 'Monitor':  # Columns in System WS
                         if column_name.startswith('Aquarium'):
                             column_name = 'Aquarium'
+                        if line.startswith('Monitor'):  # if Monitor do:
+                            if monitor_flag is None:  # saves row in monitor_flag, if 2 monitors, saves the first
+                                monitor_flag = row
+                            sheet_name = 'Monitor'  # change sheet_name to Monitor
+                            column_name = 'DOORS'  # column name is DOORS
+                            row = None  # resets row, because it is no longer in System sheet
+                        elif monitor_flag is not None:  # if sheet is Monitor, but line is not monitor
+                            row = monitor_flag  # resume row
+                            sheet_name = 'System'  # change sheet back to system
+                            monitor_flag = None
                     #  ---- WS special cases ----
                     elif sheet_name == 'WS':  # Columns in Workstation WS
                         pass
@@ -81,13 +107,12 @@ class MainWindow(QtWidgets.QMainWindow):
                         elif dongle_flag is None:
                             column_name = 'Extenders Catalog Number'
                             row = None
-
                         if line.startswith('Software Version'):
                             column_name = 'SW Version'
                         if line.startswith('Hardware Version'):
                             column_name = 'HW Version'
                     #  ---- Pacers special cases ----
-                    elif sheet_name == 'Pacers':
+                    elif sheet_name == 'Pacers' and epu_flag is None:
                         if column_name.endswith('Serial Number'):
                             column_name = 'Pacer Serial Number'
                         # TODO: ---->> if pacer validation does funny things, the 'Serial Number' should be first, I need to fix this in AutoBaseline export. <<----
@@ -100,6 +125,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         if rfg_flag == 'stockert':
                             if column_name.startswith('Serial Number'):
                                 column_name = 'Stockert SN'
+                            if column_name.startswith('Generator to WS'):
+                                column_name = 'nMARQ Generator to WS cable'
                                 # TODO: Change SN to be first in Auto Baseline export
                         if rfg_flag == 'smartablate':
                             if column_name.startswith('Serial Number'):
@@ -115,6 +142,8 @@ class MainWindow(QtWidgets.QMainWindow):
                                 column_name = 'Pump SN'
                             if column_name.startswith('COOLFLOW pump Model'):
                                 column_name = 'Pump Model'
+                            if column_name.startswith('nMARQ to COOLFLOW Pump Cable'):
+                                column_name = 'Generator to Pump cable'
                                 # TODO: Change SN to be first in Auto Baseline export
 
                 #    ----------------------------------------------------------------------------------    #
@@ -142,9 +171,17 @@ class MainWindow(QtWidgets.QMainWindow):
                     sheet_name = 'Catheters'
                     column_name = 'Catheters Catalog Number'
                     item_val = row = extenders_flag = dongle_flag = None
-                elif line.startswith('Pacer') or line.startswith('Printer') or line.startswith('EPU'):
+                elif line.startswith('Pacer'):
                     sheet_name = 'Pacers'
-                    column_name = item_val = row = None
+                    column_name = item_val = row = epu_flag = printer_flag = None
+                elif line.startswith('EPU'):
+                    sheet_name = 'Pacers'
+                    epu_flag = True
+                    item_val = column_name = row = None
+                elif line.startswith('Printer'):
+                    sheet_name = 'Pacers'
+                    printer_flag = True
+                    item_val = column_name = row = None
                 elif line.startswith('qDOT Dongle'):
                     dongle_flag = True
                     sheet_name = 'Catheters'
@@ -171,6 +208,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     item_val = None
 
                 # if Sheet, column and item_value have all been detected- Search for similarities in the specified column and sheet
+
                 if sheet_name and column_name and sheet_name in self.excel_map and column_name in self.excel_map[
                     sheet_name] and item_val is not None:
                     if row is None:
@@ -193,6 +231,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     res += f'{line}<br>'  # append unchecked lines as they are
 
             self.textEdit.setHtml(res)
+            print("------Read all lines----")
         except Exception as e:
             print("Problem in scanning baselines: " + str(e))
             traceback.print_exc()
@@ -201,9 +240,27 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Dumb functions for now, it is planned to open a child dialog and choose the db location.
         """
-        print("should update db")
-        self.wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
-        self.excel_map = explore_excel()
+        try:
+            self.wb = openpyxl.load_workbook(config.FILE_PATHS['EQP_EXCEL'])  # load excel workbook
+            self.excel_map = explore_excel()
+            print(f"Loaded database successfully! @{config.FILE_PATHS['EQP_EXCEL']}")
+        except Exception as e:
+            print("Problem in loading excel file: " + str(e))
+            traceback.print_exc()
+
+    def location_dialog(self):
+        file = QFileDialog.getOpenFileName(None, "Select a file", filter='Excel files (*.xlsx)')
+        if file[0] != '':
+            config.FILE_PATHS['EQP_EXCEL'] = file[0]
+            self.update_db()
+
+    def change_color(self, color):
+        cursor = self.textEdit.textCursor()
+        if cursor.hasSelection():
+            fmt = QtGui.QTextCharFormat()
+            tag = QColor(name_to_color[color])
+            fmt.setForeground(tag)
+            cursor.setCharFormat(fmt)
 
 
 def color_str(color: str, word: str) -> str:
@@ -254,17 +311,17 @@ def find_word_in_db(sheet_name, column, word, row=None):
     try:
         ws = MainWindow.wb[sheet_name]
         if row is None:  # e.g. row unknown, searching row
-            for row in range(3,
-                             ws.max_row + 1):  # iterates all rows (row = tuple), added +1 because if the value was last it didn't get to it.
+            for row in range(3, ws.max_row + 1):  # iterates all rows (row = tuple), added +1 because if the value
+                # was last it didn't get to it.
                 ans = find_cell_in_db(column=column, row=row, word=word)
                 if ans['diff'] == 1:
-                    print(f"----found exact match for item in row {row}!!----")
                     return ans
         else:  # e.g. row is known
             return find_cell_in_db(column=column, row=row, word=word)
 
     except Exception as e:
         print("Problem finding word in db: " + str(e))
+        traceback.print_exc()
 
 
 def similar(str1, str2):

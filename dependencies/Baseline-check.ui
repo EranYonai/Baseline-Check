@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
-    <height>589</height>
+    <width>653</width>
+    <height>1007</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,12 +16,84 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="tealButton">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(116, 194, 225);
+font: normal normal bold 20px trebuchet ms;
+color: white;
+text-align: center;
+ vertical-align: middle;
+border-radius: 10px;</string>
+        </property>
+        <property name="text">
+         <string>Teal</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="greenButton">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(0, 128, 0);
+font: normal normal bold 20px trebuchet ms;
+color: white;
+text-align: center;
+ vertical-align: middle;
+border-radius: 10px;</string>
+        </property>
+        <property name="text">
+         <string>Green</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="yellowButton">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(255, 165, 0);
+font: normal normal bold 20px trebuchet ms;
+color: white;
+text-align: center;
+ vertical-align: middle;
+border-radius: 10px;</string>
+        </property>
+        <property name="text">
+         <string>Yellow</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="redButton">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(255, 0, 0);
+font: normal normal bold 20px trebuchet ms;
+color: white;
+text-align: center;
+ vertical-align: middle;
+border-radius: 10px;</string>
+        </property>
+        <property name="text">
+         <string>Red</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QTextEdit" name="textEdit"/>
       </item>
       <item>
        <widget class="QPushButton" name="check_button">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(0,0,128);
+font: normal normal bold 20px trebuchet ms;
+color: white;
+text-align: center;
+ vertical-align: middle;
+border-radius: 10px;</string>
+        </property>
         <property name="text">
          <string>Check</string>
         </property>
@@ -36,15 +108,17 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>520</width>
+     <width>653</width>
      <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Tools</string>
+     <string>Options</string>
     </property>
     <addaction name="actionRefresh_Database"/>
+    <addaction name="actionDB_Location"/>
+    <addaction name="actionReturn"/>
    </widget>
    <addaction name="menuTools"/>
   </widget>
@@ -52,6 +126,16 @@
   <action name="actionRefresh_Database">
    <property name="text">
     <string>Refresh Database</string>
+   </property>
+  </action>
+  <action name="actionDB_Location">
+   <property name="text">
+    <string>DB Location</string>
+   </property>
+  </action>
+  <action name="actionReturn">
+   <property name="text">
+    <string>Return</string>
    </property>
   </action>
  </widget>
